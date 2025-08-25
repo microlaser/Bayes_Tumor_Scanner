@@ -1,0 +1,54 @@
+from google.colab import drive
+drive.mount('/content/drive')
+import numpy as np
+import cv2
+import os
+import matplotlib.pyplot as plt
+
+# Define the dataset path and categories
+DATADIR = "/content/drive/My Drive/Downloads/Data Set Brain Tumor/Testing"
+CATEGORIES = ["glioma_tumor", "meningioma_tumor", "no_tumor", "pituitary_tumor"]
+IMG_SIZE = 128  # Define a consistent size for all images
+
+# Create lists to store the image data and labels
+all_images = []
+all_labels = []
+
+# Loop through each category to read, resize, and label images
+for category in CATEGORIES:
+    path = os.path.join(DATADIR, category)
+    class_label = CATEGORIES.index(category)  # Assign a numerical label to each category
+
+    # Loop through all images in the category folder
+    for img_name in os.listdir(path):
+        try:
+            # Construct the full image path
+            img_path = os.path.join(path, img_name)
+
+            # Read the image in grayscale to simplify preprocessing
+            img_array = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+
+            # Resize the image to a consistent size
+            resized_array = cv2.resize(img_array, (IMG_SIZE, IMG_SIZE))
+
+            # Store the resized image and its label
+            all_images.append(resized_array)
+            all_labels.append(class_label)
+
+        except Exception as e:
+            # Handle potential errors, like corrupted files
+            print(f"Error processing {img_path}: {e}")
+
+# Convert the lists to NumPy arrays for easy use with machine learning models
+X = np.array(all_images).reshape(-1, IMG_SIZE, IMG_SIZE, 1) # Reshape for a single channel (grayscale)
+y = np.array(all_labels)
+
+# Example: Display the first preprocessed image and its label
+plt.imshow(X[0].reshape(IMG_SIZE, IMG_SIZE), cmap='gray')
+plt.title(f"Label: {CATEGORIES[y[0]]}")
+plt.axis("off")
+plt.show()
+
+# Print the shape of the final arrays to confirm the data is ready
+print(f"Shape of image data (X): {X.shape}")
+print(f"Shape of label data (y): {y.shape}")
